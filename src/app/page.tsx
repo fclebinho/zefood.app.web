@@ -23,7 +23,7 @@ export default function LandingPage() {
             <div className="h-9 w-9 rounded-lg bg-orange-500 flex items-center justify-center">
               <Store className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900">FoodApp</span>
+            <span className="text-xl font-bold text-gray-900">ZeFood</span>
           </div>
           <div className="flex items-center gap-3">
             <Link
@@ -254,7 +254,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                Por que escolher o FoodApp?
+                Por que escolher o ZeFood?
               </h2>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
@@ -320,7 +320,7 @@ export default function LandingPage() {
             Pronto para começar?
           </h2>
           <p className="text-xl text-orange-100 mb-8 max-w-2xl mx-auto">
-            Junte-se a centenas de restaurantes que já estão crescendo com o FoodApp
+            Junte-se a centenas de restaurantes que já estão crescendo com o ZeFood
           </p>
           <Link
             href="/auth/register"
@@ -340,7 +340,7 @@ export default function LandingPage() {
               <div className="h-8 w-8 rounded-lg bg-orange-500 flex items-center justify-center">
                 <Store className="h-4 w-4 text-white" />
               </div>
-              <span className="text-lg font-bold text-white">FoodApp</span>
+              <span className="text-lg font-bold text-white">ZeFood</span>
             </div>
             <div className="flex gap-6 text-sm">
               <Link href="/auth/login" className="hover:text-white transition-colors">
@@ -351,7 +351,7 @@ export default function LandingPage() {
               </Link>
             </div>
             <p className="text-sm">
-              © 2024 FoodApp. Todos os direitos reservados.
+              © 2024 ZeFood. Todos os direitos reservados.
             </p>
           </div>
         </div>

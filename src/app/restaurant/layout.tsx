@@ -56,7 +56,7 @@ export default function RestaurantLayout({
         {/* Logo */}
         <div className="flex h-16 items-center gap-2 border-b px-6">
           <UtensilsCrossed className="h-6 w-6 text-orange-500" />
-          <span className="font-bold text-gray-900">FoodApp</span>
+          <span className="font-bold text-gray-900">ZeFood</span>
           <span className="ml-auto rounded bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-600">
             Restaurante
           </span>

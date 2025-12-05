@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FoodApp - Delivery de Comida",
+  title: "ZeFood - Delivery de Comida",
   description: "Peça comida dos melhores restaurantes da sua região",
 };
 

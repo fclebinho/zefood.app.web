@@ -64,7 +64,7 @@ export default function AdminLayout({
         <div className="p-4 border-b border-gray-800">
           <div className="flex items-center justify-between">
             {sidebarOpen && (
-              <h1 className="text-xl font-bold text-red-500">FoodApp Admin</h1>
+              <h1 className="text-xl font-bold text-red-500">ZeFood Admin</h1>
             )}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}

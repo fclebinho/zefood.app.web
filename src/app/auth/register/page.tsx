@@ -178,19 +178,14 @@ export default function RegisterPage() {
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  required
                 >
-                  <option value="">Selecione uma categoria</option>
-                  <option value="PIZZA">Pizzaria</option>
-                  <option value="BURGER">Hamburgueria</option>
-                  <option value="JAPANESE">Japonesa</option>
-                  <option value="BRAZILIAN">Brasileira</option>
-                  <option value="ITALIAN">Italiana</option>
-                  <option value="CHINESE">Chinesa</option>
-                  <option value="MEXICAN">Mexicana</option>
-                  <option value="DESSERT">Sobremesas</option>
-                  <option value="HEALTHY">Saudável</option>
-                  <option value="OTHER">Outros</option>
+                  <option value="">Selecione uma categoria (opcional)</option>
+                  <option value="pizza">🍕 Pizza</option>
+                  <option value="lanches">🍔 Lanches</option>
+                  <option value="japonesa">🍣 Japonesa</option>
+                  <option value="brasileira">🍛 Brasileira</option>
+                  <option value="sobremesas">🍰 Sobremesas</option>
+                  <option value="bebidas">🥤 Bebidas</option>
                 </select>
               </div>
               <div className="space-y-2">
