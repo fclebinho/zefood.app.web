@@ -38,9 +38,15 @@ export function useOrdersSocket({
     onOrderStatusUpdateRef.current = onOrderStatusUpdate;
   }, [onOrderStatusUpdate]);
 
+  // Store restaurantId in ref for use in socket events
+  const restaurantIdRef = useRef(restaurantId);
+  useEffect(() => {
+    restaurantIdRef.current = restaurantId;
+  }, [restaurantId]);
+
   // Create socket connection once
   useEffect(() => {
-    console.log('Creating WebSocket connection to:', WS_URL);
+    console.log('[WebSocket] Creating connection to:', `${WS_URL}/orders`);
 
     // Connect to /orders namespace which is where the backend gateway listens
     const socket = io(`${WS_URL}/orders`, {
@@ -51,40 +57,41 @@ export function useOrdersSocket({
     socketRef.current = socket;
 
     socket.on('connect', () => {
-      console.log('WebSocket connected, socket id:', socket.id);
+      console.log('[WebSocket] Connected, socket id:', socket.id);
 
       // Join restaurant room if restaurantId is available
-      if (restaurantId && joinedRestaurantRef.current !== restaurantId) {
-        console.log('Joining restaurant room:', restaurantId);
-        socket.emit('joinRestaurant', restaurantId);
-        joinedRestaurantRef.current = restaurantId;
+      const currentRestaurantId = restaurantIdRef.current;
+      if (currentRestaurantId && joinedRestaurantRef.current !== currentRestaurantId) {
+        console.log('[WebSocket] Joining restaurant room:', currentRestaurantId);
+        socket.emit('joinRestaurant', currentRestaurantId);
+        joinedRestaurantRef.current = currentRestaurantId;
       }
     });
 
-    socket.on('disconnect', () => {
-      console.log('WebSocket disconnected');
+    socket.on('disconnect', (reason) => {
+      console.log('[WebSocket] Disconnected, reason:', reason);
       joinedRestaurantRef.current = null;
     });
 
     // Listen for new orders
     socket.on('newOrder', (data: { order: any }) => {
-      console.log('New order received via WebSocket:', data.order?.id);
+      console.log('[WebSocket] New order received:', data.order?.id);
       onNewOrderRef.current?.(data.order);
     });
 
     // Listen for order status updates
     socket.on('orderStatusUpdate', (data: OrderStatusUpdate) => {
-      console.log('Order status update via WebSocket:', data.orderId, data.status);
+      console.log('[WebSocket] Order status update:', data.orderId, data.status);
       onOrderStatusUpdateRef.current?.(data);
     });
 
     socket.on('connect_error', (error) => {
-      console.error('WebSocket connection error:', error.message);
+      console.error('[WebSocket] Connection error:', error.message);
     });
 
     // Cleanup on unmount
     return () => {
-      console.log('Disconnecting WebSocket');
+      console.log('[WebSocket] Disconnecting');
       socket.disconnect();
     };
   }, []); // Only create socket once
