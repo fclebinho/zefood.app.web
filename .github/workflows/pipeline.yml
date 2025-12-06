@@ -39,6 +39,8 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
+          build-args: |
+            NEXT_PUBLIC_API_URL=https://zefood.app/api
           tags: |
             ${{ secrets.DOCKER_HUB_USERNAME}}/${{env.IMAGE_NAME}}:${{ steps.get_version.outputs.VERSION }}
             ${{ secrets.DOCKER_HUB_USERNAME}}/${{env.IMAGE_NAME}}:latest
