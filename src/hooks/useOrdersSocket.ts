@@ -42,7 +42,8 @@ export function useOrdersSocket({
   useEffect(() => {
     console.log('Creating WebSocket connection to:', WS_URL);
 
-    const socket = io(WS_URL, {
+    // Connect to /orders namespace which is where the backend gateway listens
+    const socket = io(`${WS_URL}/orders`, {
       path: '/socket.io',
       transports: ['websocket', 'polling'],
     });
