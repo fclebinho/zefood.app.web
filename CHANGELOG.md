@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.6](https://github.com/fclebinho/zefood.app/compare/v0.1.5...v0.1.6) (2025-12-06)
+
+
+### Bug Fixes
+
+* improve WebSocket hook with better restaurantId handling ([d4d39c4](https://github.com/fclebinho/zefood.app/commit/d4d39c41b5ffb2f682ca5912bbd9bfcd9995b00b))
+
 ### [0.1.5](https://github.com/fclebinho/zefood.app/compare/v0.1.4...v0.1.5) (2025-12-06)
 
 
