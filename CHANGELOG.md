@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.5](https://github.com/fclebinho/zefood.app/compare/v0.1.4...v0.1.5) (2025-12-06)
+
+
+### Bug Fixes
+
+* connect WebSocket to /orders namespace ([75074bd](https://github.com/fclebinho/zefood.app/commit/75074bd5d247cbde02ffe9cec82cdff908288fd2))
+
 ### [0.1.4](https://github.com/fclebinho/zefood.app/compare/v0.1.3...v0.1.4) (2025-12-06)
 
 
