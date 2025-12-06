@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.4](https://github.com/fclebinho/zefood.app/compare/v0.1.3...v0.1.4) (2025-12-06)
+
+
+### Bug Fixes
+
+* improve WebSocket connection and prevent duplicate order updates ([8061719](https://github.com/fclebinho/zefood.app/commit/8061719ebdbbeb00257b82b54a9c5297c3a3ff7a))
+
 ### [0.1.3](https://github.com/fclebinho/zefood.app/compare/v0.1.2...v0.1.3) (2025-12-06)
 
 
