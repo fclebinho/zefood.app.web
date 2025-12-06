@@ -108,12 +108,28 @@ export default function OrdersPage() {
     }
   };
 
+  const [updatingOrders, setUpdatingOrders] = useState<Set<string>>(new Set());
+
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    // Prevent duplicate calls
+    if (updatingOrders.has(orderId)) return;
+
+    // Check if order already has this status
+    const order = orders.find((o) => o.id === orderId);
+    if (order?.status === newStatus) return;
+
+    setUpdatingOrders((prev) => new Set(prev).add(orderId));
     try {
       await api.patch(`/orders/${orderId}/status`, { status: newStatus });
       // Note: WebSocket will update the order status automatically
     } catch (error) {
       console.error('Error updating order:', error);
+    } finally {
+      setUpdatingOrders((prev) => {
+        const next = new Set(prev);
+        next.delete(orderId);
+        return next;
+      });
     }
   };
 
@@ -264,17 +280,19 @@ export default function OrdersPage() {
             <div className="flex gap-2 pt-2">
               <button
                 onClick={() => updateOrderStatus(order.id, 'CANCELLED')}
-                className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                disabled={updatingOrders.has(order.id)}
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-gray-200 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <X className="h-4 w-4" />
                 Recusar
               </button>
               <button
                 onClick={() => updateOrderStatus(order.id, 'CONFIRMED')}
-                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-orange-500 py-2.5 text-sm font-medium text-white hover:bg-orange-600"
+                disabled={updatingOrders.has(order.id)}
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-orange-500 py-2.5 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Check className="h-4 w-4" />
-                Aceitar
+                {updatingOrders.has(order.id) ? 'Processando...' : 'Aceitar'}
               </button>
             </div>
           )}
@@ -282,9 +300,10 @@ export default function OrdersPage() {
           {(order.status === 'CONFIRMED' || order.status === 'PREPARING') && (
             <button
               onClick={() => updateOrderStatus(order.id, 'READY')}
-              className="w-full rounded-lg bg-orange-500 py-2.5 text-sm font-medium text-white hover:bg-orange-600"
+              disabled={updatingOrders.has(order.id)}
+              className="w-full rounded-lg bg-orange-500 py-2.5 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Marcar como Pronto
+              {updatingOrders.has(order.id) ? 'Processando...' : 'Marcar como Pronto'}
             </button>
           )}
 

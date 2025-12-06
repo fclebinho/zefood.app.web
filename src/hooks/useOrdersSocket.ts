@@ -3,8 +3,8 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-// Remove /api from the URL for WebSocket connection
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace('/api', '');
+// Base URL for WebSocket connection (without /api)
+const WS_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace('/api', '');
 
 interface OrderStatusUpdate {
   orderId: string;
@@ -40,9 +40,10 @@ export function useOrdersSocket({
 
   // Create socket connection once
   useEffect(() => {
-    console.log('Creating WebSocket connection to:', `${API_URL}/orders`);
+    console.log('Creating WebSocket connection to:', WS_URL);
 
-    const socket = io(`${API_URL}/orders`, {
+    const socket = io(WS_URL, {
+      path: '/socket.io',
       transports: ['websocket', 'polling'],
     });
 
