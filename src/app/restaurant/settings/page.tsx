@@ -15,6 +15,33 @@ interface ViaCepResponse {
   erro?: boolean;
 }
 
+interface RestaurantHour {
+  dayOfWeek: number;
+  openTime: string | null;
+  closeTime: string | null;
+  isClosed: boolean;
+}
+
+interface RestaurantApiResponse {
+  name: string;
+  description: string;
+  phone: string;
+  email: string;
+  zipCode: string;
+  street: string;
+  number: string;
+  complement: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  deliveryFee: number;
+  minOrderValue: number;
+  avgPrepTime: number;
+  deliveryRadius: number;
+  isOpen: boolean;
+  hours?: RestaurantHour[];
+}
+
 interface RestaurantSettings {
   name: string;
   description: string;
@@ -83,13 +110,13 @@ export default function SettingsPage() {
 
   const loadSettings = useCallback(async () => {
     try {
-      const response = await api.get('/restaurants/my/settings');
+      const response = await api.get<RestaurantApiResponse>('/restaurants/my/settings');
       const data = response.data;
 
       // Parse opening hours from API format
       const openingHours: RestaurantSettings['openingHours'] = {};
       daysOfWeek.forEach((day) => {
-        const hour = data.hours?.find((h: { dayOfWeek: number }) => h.dayOfWeek === day.dayOfWeek);
+        const hour = data.hours?.find((h) => h.dayOfWeek === day.dayOfWeek);
         if (hour) {
           const openTime = hour.openTime ? new Date(hour.openTime).toISOString().slice(11, 16) : '11:00';
           const closeTime = hour.closeTime ? new Date(hour.closeTime).toISOString().slice(11, 16) : '23:00';
