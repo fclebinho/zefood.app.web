@@ -1,41 +1,103 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar, TrendingUp, DollarSign, ShoppingBag, Users } from 'lucide-react';
+import api from '@/services/api';
+
+interface ReportStats {
+  totalRevenue: number;
+  totalOrders: number;
+  avgTicket: number;
+  uniqueCustomers: number;
+}
+
+interface TopProduct {
+  name: string;
+  quantity: number;
+  revenue: number;
+  percent: number;
+}
+
+interface RevenueByDay {
+  date: string;
+  dayOfWeek: string;
+  revenue: number;
+  orders: number;
+}
+
+interface OrdersByHour {
+  hour: string;
+  orders: number;
+}
+
+interface ReportsData {
+  stats: ReportStats;
+  topProducts: TopProduct[];
+  revenueByDay: RevenueByDay[];
+  ordersByHour: OrdersByHour[];
+}
 
 export default function ReportsPage() {
   const [period, setPeriod] = useState('week');
+  const [data, setData] = useState<ReportsData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadReports();
+  }, [period]);
+
+  const loadReports = async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.get<ReportsData>(`/restaurants/my/reports?period=${period}`);
+      setData(response.data);
+    } catch (error) {
+      console.error('Error loading reports:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value);
+  };
 
   const stats = [
     {
       title: 'Faturamento Total',
-      value: 'R$ 12.450,00',
-      change: '+12%',
-      positive: true,
+      value: formatCurrency(data?.stats.totalRevenue || 0),
       icon: DollarSign,
     },
     {
       title: 'Total de Pedidos',
-      value: '342',
-      change: '+8%',
-      positive: true,
+      value: data?.stats.totalOrders?.toString() || '0',
       icon: ShoppingBag,
     },
     {
       title: 'Ticket Médio',
-      value: 'R$ 36,40',
-      change: '+3%',
-      positive: true,
+      value: formatCurrency(data?.stats.avgTicket || 0),
       icon: TrendingUp,
     },
     {
-      title: 'Novos Clientes',
-      value: '48',
-      change: '-5%',
-      positive: false,
+      title: 'Clientes Únicos',
+      value: data?.stats.uniqueCustomers?.toString() || '0',
       icon: Users,
     },
   ];
+
+  const maxRevenue = Math.max(...(data?.revenueByDay?.map((d) => d.revenue) || [1]), 1);
+  const maxOrders = Math.max(...(data?.ordersByHour?.map((h) => h.orders) || [1]), 1);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -72,72 +134,113 @@ export default function ReportsPage() {
             </div>
             <div className="mt-4">
               <span className="text-3xl font-bold text-gray-900">{stat.value}</span>
-              <p className={`mt-1 text-sm ${stat.positive ? 'text-green-600' : 'text-red-600'}`}>
-                {stat.change} vs período anterior
-              </p>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Charts Placeholder */}
+      {/* Charts */}
       <div className="grid gap-6 lg:grid-cols-2">
+        {/* Revenue by Day Chart */}
         <div className="rounded-xl border bg-white p-6">
           <h3 className="mb-4 font-semibold text-gray-900">Vendas por Dia</h3>
-          <div className="flex h-64 items-center justify-center text-gray-400">
-            Gráfico de vendas (em desenvolvimento)
-          </div>
+          {data?.revenueByDay && data.revenueByDay.length > 0 ? (
+            <div className="flex h-64 items-end justify-between gap-2">
+              {data.revenueByDay.map((day) => (
+                <div key={day.date} className="flex flex-1 flex-col items-center">
+                  <div
+                    className="w-full rounded-t bg-orange-500 transition-all"
+                    style={{
+                      height: `${maxRevenue ? (day.revenue / maxRevenue) * 200 : 0}px`,
+                      minHeight: day.revenue > 0 ? '10px' : '2px',
+                    }}
+                  />
+                  <span className="mt-2 text-xs text-gray-500">{day.dayOfWeek}</span>
+                  <span className="text-xs font-medium text-gray-700">
+                    {formatCurrency(day.revenue)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex h-64 items-center justify-center text-gray-400">
+              Nenhum dado disponível
+            </div>
+          )}
         </div>
 
+        {/* Orders by Hour Chart */}
         <div className="rounded-xl border bg-white p-6">
-          <h3 className="mb-4 font-semibold text-gray-900">Pedidos por Hora</h3>
-          <div className="flex h-64 items-center justify-center text-gray-400">
-            Gráfico de pedidos (em desenvolvimento)
-          </div>
+          <h3 className="mb-4 font-semibold text-gray-900">Pedidos por Hora (Hoje)</h3>
+          {data?.ordersByHour && data.ordersByHour.some((h) => h.orders > 0) ? (
+            <div className="flex h-64 items-end justify-between gap-1 overflow-x-auto">
+              {data.ordersByHour
+                .filter((_, i) => i >= 8 && i <= 23)
+                .map((hour) => (
+                  <div key={hour.hour} className="flex flex-1 flex-col items-center">
+                    <span className="mb-1 text-xs font-medium text-gray-700">{hour.orders}</span>
+                    <div
+                      className="w-full min-w-[20px] rounded-t bg-blue-500 transition-all"
+                      style={{
+                        height: `${maxOrders ? (hour.orders / maxOrders) * 180 : 0}px`,
+                        minHeight: hour.orders > 0 ? '10px' : '2px',
+                      }}
+                    />
+                    <span className="mt-2 text-xs text-gray-500">
+                      {hour.hour.split(':')[0]}h
+                    </span>
+                  </div>
+                ))}
+            </div>
+          ) : (
+            <div className="flex h-64 items-center justify-center text-gray-400">
+              Nenhum pedido hoje
+            </div>
+          )}
         </div>
       </div>
 
       {/* Top Products */}
       <div className="rounded-xl border bg-white p-6">
         <h3 className="mb-4 font-semibold text-gray-900">Produtos Mais Vendidos</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b text-left text-sm text-gray-500">
-                <th className="pb-3 font-medium">Produto</th>
-                <th className="pb-3 font-medium">Quantidade</th>
-                <th className="pb-3 font-medium">Receita</th>
-                <th className="pb-3 font-medium">% do Total</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {[
-                { name: 'Whopper', qty: 156, revenue: 'R$ 4.664,40', percent: '37%' },
-                { name: 'Whopper Duplo', qty: 98, revenue: 'R$ 3.910,20', percent: '31%' },
-                { name: 'Batata Frita G', qty: 142, revenue: 'R$ 2.115,80', percent: '17%' },
-                { name: 'Coca-Cola 350ml', qty: 189, revenue: 'R$ 1.304,10', percent: '10%' },
-                { name: 'Milk Shake', qty: 45, revenue: 'R$ 715,50', percent: '5%' },
-              ].map((product) => (
-                <tr key={product.name} className="text-sm">
-                  <td className="py-3 font-medium text-gray-900">{product.name}</td>
-                  <td className="py-3 text-gray-600">{product.qty}</td>
-                  <td className="py-3 text-gray-600">{product.revenue}</td>
-                  <td className="py-3">
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-20 rounded-full bg-gray-100">
-                        <div
-                          className="h-full rounded-full bg-orange-500"
-                          style={{ width: product.percent }}
-                        />
-                      </div>
-                      <span className="text-gray-600">{product.percent}</span>
-                    </div>
-                  </td>
+        {data?.topProducts && data.topProducts.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b text-left text-sm text-gray-500">
+                  <th className="pb-3 font-medium">Produto</th>
+                  <th className="pb-3 font-medium">Quantidade</th>
+                  <th className="pb-3 font-medium">Receita</th>
+                  <th className="pb-3 font-medium">% do Total</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y">
+                {data.topProducts.map((product, index) => (
+                  <tr key={index} className="text-sm">
+                    <td className="py-3 font-medium text-gray-900">{product.name}</td>
+                    <td className="py-3 text-gray-600">{product.quantity}</td>
+                    <td className="py-3 text-gray-600">{formatCurrency(product.revenue)}</td>
+                    <td className="py-3">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 w-20 rounded-full bg-gray-100">
+                          <div
+                            className="h-full rounded-full bg-orange-500"
+                            style={{ width: `${product.percent}%` }}
+                          />
+                        </div>
+                        <span className="text-gray-600">{product.percent}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center py-8 text-gray-400">
+            Nenhum produto vendido neste período
+          </div>
+        )}
       </div>
     </div>
   );

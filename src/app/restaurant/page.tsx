@@ -26,6 +26,17 @@ interface Order {
   createdAt: string;
 }
 
+interface TopProduct {
+  name: string;
+  quantity: number;
+  revenue: number;
+  percent: number;
+}
+
+interface ReportsData {
+  topProducts: TopProduct[];
+}
+
 const statusColors: Record<string, string> = {
   PENDING: 'bg-yellow-500',
   CONFIRMED: 'bg-blue-500',
@@ -55,6 +66,7 @@ export default function RestaurantDashboard() {
   });
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
+  const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
 
@@ -64,12 +76,14 @@ export default function RestaurantDashboard() {
 
   const loadDashboardData = async () => {
     try {
-      const [ordersRes, restaurantRes] = await Promise.all([
+      const [ordersRes, restaurantRes, reportsRes] = await Promise.all([
         api.get<Order[]>('/restaurants/my/orders'),
         api.get<Restaurant>('/restaurants/my/profile'),
+        api.get<ReportsData>('/restaurants/my/reports?period=week'),
       ]);
       const orders = ordersRes.data;
       setRestaurant(restaurantRes.data);
+      setTopProducts(reportsRes.data.topProducts || []);
 
       // Calculate stats
       const newOrders = orders.filter((o: Order) => o.status === 'PENDING').length;
@@ -245,27 +259,26 @@ export default function RestaurantDashboard() {
         <div className="rounded-xl border bg-white p-6">
           <h3 className="mb-4 font-semibold text-gray-900">Produtos Mais Vendidos</h3>
           <div className="space-y-3">
-            {[
-              { name: 'X-Burger', sold: 45, percent: 90 },
-              { name: 'Batata Frita', sold: 38, percent: 76 },
-              { name: 'Refrigerante', sold: 32, percent: 64 },
-              { name: 'X-Salada', sold: 28, percent: 56 },
-            ].map((item) => (
-              <div key={item.name} className="flex items-center gap-3">
-                <div className="flex-1">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-700">{item.name}</span>
-                    <span className="text-gray-500">{item.sold} un</span>
-                  </div>
-                  <div className="mt-1 h-2 w-full rounded-full bg-gray-100">
-                    <div
-                      className="h-full rounded-full bg-orange-500"
-                      style={{ width: `${item.percent}%` }}
-                    />
+            {topProducts.length > 0 ? (
+              topProducts.slice(0, 4).map((item) => (
+                <div key={item.name} className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-700">{item.name}</span>
+                      <span className="text-gray-500">{item.quantity} un</span>
+                    </div>
+                    <div className="mt-1 h-2 w-full rounded-full bg-gray-100">
+                      <div
+                        className="h-full rounded-full bg-orange-500"
+                        style={{ width: `${item.percent}%` }}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-center text-sm text-gray-400">Nenhum produto vendido ainda</p>
+            )}
           </div>
         </div>
 
