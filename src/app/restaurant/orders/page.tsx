@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Clock, MapPin, CreditCard, Phone, Check, X, Bell } from 'lucide-react';
+import { Clock, MapPin, CreditCard, Phone, Check, X, Bell, Volume2 } from 'lucide-react';
+import { toast } from 'sonner';
 import api from '@/services/api';
 import { useOrdersSocket } from '@/hooks/useOrdersSocket';
+import { useNotificationSound } from '@/hooks/useNotificationSound';
 
 interface OrderItem {
   id: string;
@@ -43,6 +45,7 @@ export default function OrdersPage() {
   const [activeTab, setActiveTab] = useState<TabType>('pending');
   const [isLoading, setIsLoading] = useState(true);
   const [restaurantId, setRestaurantId] = useState<string | undefined>();
+  const { playSound, stopSound } = useNotificationSound();
 
   // Handle new order from WebSocket
   const handleNewOrder = useCallback((order: Order) => {
@@ -54,12 +57,20 @@ export default function OrdersPage() {
       // Add new order to the beginning
       return [order, ...prev];
     });
-    // Play notification sound
-    try {
-      const audio = new Audio('/notification.mp3');
-      audio.play().catch(() => {});
-    } catch {}
-  }, []);
+
+    // Play notification sound (repeats 3 times)
+    playSound({ volume: 0.8, loop: true, loopCount: 3 });
+
+    // Show toast notification
+    toast.success('Novo pedido recebido!', {
+      description: `Pedido #${order.id.slice(-6).toUpperCase()} - ${order.customer?.fullName || 'Cliente'}`,
+      duration: 10000,
+      action: {
+        label: 'Ver pedido',
+        onClick: () => setActiveTab('pending'),
+      },
+    });
+  }, [playSound]);
 
   // Handle order status update from WebSocket
   const handleOrderStatusUpdate = useCallback(
