@@ -163,6 +163,21 @@ export default function AdminSettingsPage() {
         );
 
       default:
+        // Special handling for card_gateway setting
+        if (setting.key === 'card_gateway') {
+          return (
+            <select
+              value={value ?? 'both'}
+              onChange={(e) => handleValueChange(setting.key, e.target.value)}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 ${hasChanged ? 'border-blue-400 bg-blue-50' : 'border-gray-300'}`}
+            >
+              <option value="both">Ambos (Stripe + Mercado Pago)</option>
+              <option value="stripe">Apenas Stripe</option>
+              <option value="mercadopago">Apenas Mercado Pago</option>
+            </select>
+          );
+        }
+
         const isPassword = setting.key.includes('secret') || setting.key.includes('token') || setting.key.includes('key');
         return (
           <input
