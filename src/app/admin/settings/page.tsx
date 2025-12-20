@@ -1,7 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Truck, Banknote, CreditCard, Package, Settings, FileText, Save } from 'lucide-react';
+import { Truck, Banknote, CreditCard, Package, Settings, FileText, Save, RefreshCw, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+
+interface GatewayStatus {
+  stripe: {
+    configured: boolean;
+    enabled: boolean;
+  };
+  mercadopago: {
+    configured: boolean;
+    enabled: boolean;
+  };
+  activeGateway: string;
+}
 
 interface Setting {
   id: string;
@@ -37,10 +49,13 @@ export default function AdminSettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [editedValues, setEditedValues] = useState<Record<string, any>>({});
+  const [gatewayStatus, setGatewayStatus] = useState<GatewayStatus | null>(null);
+  const [isReinitializing, setIsReinitializing] = useState(false);
 
   useEffect(() => {
     loadSettings();
     loadCategories();
+    loadGatewayStatus();
   }, []);
 
   const loadSettings = async () => {
@@ -79,6 +94,48 @@ export default function AdminSettingsPage() {
       setCategories(data);
     } catch (err) {
       console.error('Error loading categories:', err);
+    }
+  };
+
+  const loadGatewayStatus = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/admin/gateway-status`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) return;
+
+      const data = await response.json();
+      setGatewayStatus(data);
+    } catch (err) {
+      console.error('Error loading gateway status:', err);
+    }
+  };
+
+  const reinitializeGateways = async () => {
+    setIsReinitializing(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/admin/reinitialize-gateways`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) throw new Error('Failed to reinitialize gateways');
+
+      await loadGatewayStatus();
+      setSuccessMessage('Gateways de pagamento reinicializados com sucesso!');
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      setError('Erro ao reinicializar gateways');
+      console.error(err);
+    } finally {
+      setIsReinitializing(false);
     }
   };
 
@@ -299,6 +356,88 @@ export default function AdminSettingsPage() {
                   {categories.find((c) => c.key === activeCategory)?.label || activeCategory}
                 </h2>
               </div>
+
+              {/* Gateway Status Panel - Only show for payment category */}
+              {activeCategory === 'payment' && gatewayStatus && (
+                <div className="p-4 border-b bg-gray-50">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-medium text-gray-900">Status dos Gateways</h3>
+                    <button
+                      onClick={reinitializeGateways}
+                      disabled={isReinitializing}
+                      className="px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 flex items-center gap-2"
+                    >
+                      {isReinitializing ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                          Reinicializando...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="h-4 w-4" />
+                          Reinicializar Gateways
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Stripe Status */}
+                    <div className={`p-4 rounded-lg border ${gatewayStatus.stripe.configured && gatewayStatus.stripe.enabled ? 'bg-green-50 border-green-200' : gatewayStatus.stripe.configured ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200'}`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <CreditCard className="h-5 w-5" />
+                        <span className="font-medium">Stripe</span>
+                      </div>
+                      <div className="space-y-1 text-sm">
+                        <div className="flex items-center gap-2">
+                          {gatewayStatus.stripe.configured ? (
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-red-500" />
+                          )}
+                          <span>{gatewayStatus.stripe.configured ? 'Configurado' : 'Não configurado'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {gatewayStatus.stripe.enabled ? (
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-gray-400" />
+                          )}
+                          <span>{gatewayStatus.stripe.enabled ? 'Habilitado' : 'Desabilitado'}</span>
+                        </div>
+                      </div>
+                    </div>
+                    {/* MercadoPago Status */}
+                    <div className={`p-4 rounded-lg border ${gatewayStatus.mercadopago.configured && gatewayStatus.mercadopago.enabled ? 'bg-green-50 border-green-200' : gatewayStatus.mercadopago.configured ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200'}`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Banknote className="h-5 w-5" />
+                        <span className="font-medium">Mercado Pago</span>
+                      </div>
+                      <div className="space-y-1 text-sm">
+                        <div className="flex items-center gap-2">
+                          {gatewayStatus.mercadopago.configured ? (
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-red-500" />
+                          )}
+                          <span>{gatewayStatus.mercadopago.configured ? 'Configurado' : 'Não configurado'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {gatewayStatus.mercadopago.enabled ? (
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-gray-400" />
+                          )}
+                          <span>{gatewayStatus.mercadopago.enabled ? 'Habilitado' : 'Desabilitado'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-3">
+                    <AlertCircle className="inline h-3 w-3 mr-1" />
+                    Após alterar as chaves de API, clique em "Salvar Alterações" e depois em "Reinicializar Gateways" para aplicar as mudanças.
+                  </p>
+                </div>
+              )}
 
               <div className="p-6 space-y-6">
                 {filteredSettings.map((setting) => (
