@@ -61,7 +61,7 @@ export default function AdminSettingsPage() {
   const loadSettings = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -82,7 +82,7 @@ export default function AdminSettingsPage() {
   const loadCategories = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings/categories`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/categories`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -100,7 +100,7 @@ export default function AdminSettingsPage() {
   const loadGatewayStatus = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/admin/gateway-status`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/admin/gateway-status`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -119,7 +119,7 @@ export default function AdminSettingsPage() {
     setIsReinitializing(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/admin/reinitialize-gateways`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/admin/reinitialize-gateways`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -165,7 +165,7 @@ export default function AdminSettingsPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/settings`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
