@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Truck, Banknote, CreditCard, Package, Settings, FileText, Save, RefreshCw, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Truck, Banknote, CreditCard, Package, Settings, FileText, Save, RefreshCw, CheckCircle, XCircle, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 interface GatewayStatus {
   stripe: {
@@ -48,6 +48,7 @@ export default function AdminSettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [visibleSecrets, setVisibleSecrets] = useState<Set<string>>(new Set());
   const [editedValues, setEditedValues] = useState<Record<string, any>>({});
   const [gatewayStatus, setGatewayStatus] = useState<GatewayStatus | null>(null);
   const [isReinitializing, setIsReinitializing] = useState(false);
@@ -236,14 +237,40 @@ export default function AdminSettingsPage() {
         }
 
         const isPassword = setting.key.includes('secret') || setting.key.includes('token') || setting.key.includes('key');
+        const isVisible = visibleSecrets.has(setting.key);
+
+        const toggleVisibility = () => {
+          setVisibleSecrets(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(setting.key)) {
+              newSet.delete(setting.key);
+            } else {
+              newSet.add(setting.key);
+            }
+            return newSet;
+          });
+        };
+
         return (
-          <input
-            type={isPassword ? 'password' : 'text'}
-            value={value ?? ''}
-            onChange={(e) => handleValueChange(setting.key, e.target.value)}
-            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 ${hasChanged ? 'border-blue-400 bg-blue-50' : 'border-gray-300'}`}
-            placeholder={isPassword ? '••••••••' : ''}
-          />
+          <div className="relative">
+            <input
+              type={isPassword && !isVisible ? 'password' : 'text'}
+              value={value ?? ''}
+              onChange={(e) => handleValueChange(setting.key, e.target.value)}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 ${hasChanged ? 'border-blue-400 bg-blue-50' : 'border-gray-300'} ${isPassword ? 'pr-10' : ''}`}
+              placeholder={isPassword ? '••••••••' : ''}
+            />
+            {isPassword && (
+              <button
+                type="button"
+                onClick={toggleVisibility}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-500 hover:text-gray-700"
+                title={isVisible ? 'Ocultar' : 'Mostrar'}
+              >
+                {isVisible ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+              </button>
+            )}
+          </div>
         );
     }
   };
