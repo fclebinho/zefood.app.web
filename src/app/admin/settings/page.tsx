@@ -62,6 +62,7 @@ export default function AdminSettingsPage() {
     { key: 'general', label: 'Geral', icon: Settings },
     { key: 'stripe', label: 'Stripe', icon: CreditCard },
     { key: 'mercadopago', label: 'Mercado Pago', icon: Wallet },
+    { key: 'pagseguro', label: 'PagSeguro', icon: CreditCard },
     { key: 'pix', label: 'PIX', icon: QrCode },
     { key: 'cash', label: 'Dinheiro', icon: DollarSign },
   ];
@@ -70,6 +71,7 @@ export default function AdminSettingsPage() {
   const getPaymentTabForSetting = (key: string): string => {
     if (key.startsWith('stripe')) return 'stripe';
     if (key.startsWith('mercadopago')) return 'mercadopago';
+    if (key.startsWith('pagseguro')) return 'pagseguro';
     if (key.startsWith('pix')) return 'pix';
     if (key.startsWith('cash') || key === 'accept_cash') return 'cash';
     return 'general';
