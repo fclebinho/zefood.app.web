@@ -1,5 +1,28 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
+// Simple event emitter for session expiry
+type AuthEventListener = () => void;
+const authListeners: AuthEventListener[] = [];
+
+export const AUTH_EVENTS = {
+  SESSION_EXPIRED: 'SESSION_EXPIRED',
+};
+
+export const authEvents = {
+  on: (_event: string, listener: AuthEventListener) => {
+    authListeners.push(listener);
+  },
+  off: (_event: string, listener: AuthEventListener) => {
+    const index = authListeners.indexOf(listener);
+    if (index > -1) {
+      authListeners.splice(index, 1);
+    }
+  },
+  emit: (_event: string) => {
+    authListeners.forEach((listener) => listener());
+  },
+};
+
 interface FetchOptions extends RequestInit {
   token?: string;
 }
@@ -50,6 +73,11 @@ class ApiClient {
     });
 
     if (!response.ok) {
+      // Emit session expired event on 401 to force logout
+      if (response.status === 401) {
+        console.log('[ApiClient] 401 Unauthorized - emitting session expired event');
+        authEvents.emit(AUTH_EVENTS.SESSION_EXPIRED);
+      }
       const error = await response.json().catch(() => ({ message: 'An error occurred' }));
       throw new Error(error.message || 'Request failed');
     }
