@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Truck, Banknote, CreditCard, Package, Settings, FileText, Save, RefreshCw, CheckCircle, XCircle, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { Truck, Banknote, CreditCard, Package, Settings, FileText, Save, RefreshCw, CheckCircle, XCircle, AlertCircle, Eye, EyeOff, Wallet, QrCode, DollarSign } from 'lucide-react';
 
 interface GatewayStatus {
   stripe: {
@@ -52,6 +52,25 @@ export default function AdminSettingsPage() {
   const [editedValues, setEditedValues] = useState<Record<string, any>>({});
   const [gatewayStatus, setGatewayStatus] = useState<GatewayStatus | null>(null);
   const [isReinitializing, setIsReinitializing] = useState(false);
+  const [activePaymentTab, setActivePaymentTab] = useState<string>('general');
+
+  // Payment sub-tabs configuration
+  const paymentTabs = [
+    { key: 'general', label: 'Geral', icon: Settings },
+    { key: 'stripe', label: 'Stripe', icon: CreditCard },
+    { key: 'mercadopago', label: 'Mercado Pago', icon: Wallet },
+    { key: 'pix', label: 'PIX', icon: QrCode },
+    { key: 'cash', label: 'Dinheiro', icon: DollarSign },
+  ];
+
+  // Map settings to payment tabs based on their keys
+  const getPaymentTabForSetting = (key: string): string => {
+    if (key.startsWith('stripe')) return 'stripe';
+    if (key.startsWith('mercadopago')) return 'mercadopago';
+    if (key.startsWith('pix')) return 'pix';
+    if (key.startsWith('cash') || key === 'accept_cash') return 'cash';
+    return 'general';
+  };
 
   useEffect(() => {
     loadSettings();
@@ -189,7 +208,14 @@ export default function AdminSettingsPage() {
     }
   };
 
-  const filteredSettings = settings.filter((s) => s.category === activeCategory);
+  // Filter settings by category and payment tab (if payment category is selected)
+  const filteredSettings = settings.filter((s) => {
+    if (s.category !== activeCategory) return false;
+    if (activeCategory === 'payment') {
+      return getPaymentTabForSetting(s.key) === activePaymentTab;
+    }
+    return true;
+  });
 
   const renderSettingInput = (setting: Setting) => {
     const value = getDisplayValue(setting);
@@ -384,85 +410,126 @@ export default function AdminSettingsPage() {
                 </h2>
               </div>
 
-              {/* Gateway Status Panel - Only show for payment category */}
-              {activeCategory === 'payment' && gatewayStatus && (
-                <div className="p-4 border-b bg-gray-50">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-medium text-gray-900">Status dos Gateways</h3>
-                    <button
-                      onClick={reinitializeGateways}
-                      disabled={isReinitializing}
-                      className="px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 flex items-center gap-2"
-                    >
-                      {isReinitializing ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                          Reinicializando...
-                        </>
-                      ) : (
-                        <>
-                          <RefreshCw className="h-4 w-4" />
-                          Reinicializar Gateways
-                        </>
+              {/* Payment Tabs - Only show for payment category */}
+              {activeCategory === 'payment' && (
+                <div className="border-b">
+                  {/* Sub-tabs for payment providers */}
+                  <div className="flex gap-1 p-2 bg-gray-50 overflow-x-auto">
+                    {paymentTabs.map((tab) => {
+                      const TabIcon = tab.icon;
+                      const isActive = activePaymentTab === tab.key;
+                      // Get status indicator for gateway tabs
+                      let statusIndicator = null;
+                      if (tab.key === 'stripe' && gatewayStatus) {
+                        statusIndicator = gatewayStatus.stripe.configured && gatewayStatus.stripe.enabled ? (
+                          <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                        ) : gatewayStatus.stripe.configured ? (
+                          <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                        ) : (
+                          <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                        );
+                      } else if (tab.key === 'mercadopago' && gatewayStatus) {
+                        statusIndicator = gatewayStatus.mercadopago.configured && gatewayStatus.mercadopago.enabled ? (
+                          <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                        ) : gatewayStatus.mercadopago.configured ? (
+                          <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                        ) : (
+                          <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                        );
+                      }
+                      return (
+                        <button
+                          key={tab.key}
+                          onClick={() => setActivePaymentTab(tab.key)}
+                          className={`px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium whitespace-nowrap transition-colors ${
+                            isActive
+                              ? 'bg-orange-500 text-white'
+                              : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                          }`}
+                        >
+                          <TabIcon className="h-4 w-4" />
+                          {tab.label}
+                          {statusIndicator}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Gateway Status Panel - Show for Stripe and Mercado Pago tabs */}
+                  {(activePaymentTab === 'stripe' || activePaymentTab === 'mercadopago') && gatewayStatus && (
+                    <div className="p-4 bg-gray-50 border-t">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-medium text-gray-900">
+                          Status do {activePaymentTab === 'stripe' ? 'Stripe' : 'Mercado Pago'}
+                        </h3>
+                        <button
+                          onClick={reinitializeGateways}
+                          disabled={isReinitializing}
+                          className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 flex items-center gap-2"
+                        >
+                          {isReinitializing ? (
+                            <>
+                              <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent"></div>
+                              Reinicializando...
+                            </>
+                          ) : (
+                            <>
+                              <RefreshCw className="h-3 w-3" />
+                              Reinicializar
+                            </>
+                          )}
+                        </button>
+                      </div>
+                      {activePaymentTab === 'stripe' && (
+                        <div className={`p-3 rounded-lg border ${gatewayStatus.stripe.configured && gatewayStatus.stripe.enabled ? 'bg-green-50 border-green-200' : gatewayStatus.stripe.configured ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200'}`}>
+                          <div className="flex items-center gap-4 text-sm">
+                            <div className="flex items-center gap-2">
+                              {gatewayStatus.stripe.configured ? (
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <XCircle className="h-4 w-4 text-red-500" />
+                              )}
+                              <span>{gatewayStatus.stripe.configured ? 'Configurado' : 'Não configurado'}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {gatewayStatus.stripe.enabled ? (
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <XCircle className="h-4 w-4 text-gray-400" />
+                              )}
+                              <span>{gatewayStatus.stripe.enabled ? 'Habilitado' : 'Desabilitado'}</span>
+                            </div>
+                          </div>
+                        </div>
                       )}
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* Stripe Status */}
-                    <div className={`p-4 rounded-lg border ${gatewayStatus.stripe.configured && gatewayStatus.stripe.enabled ? 'bg-green-50 border-green-200' : gatewayStatus.stripe.configured ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200'}`}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <CreditCard className="h-5 w-5" />
-                        <span className="font-medium">Stripe</span>
-                      </div>
-                      <div className="space-y-1 text-sm">
-                        <div className="flex items-center gap-2">
-                          {gatewayStatus.stripe.configured ? (
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <XCircle className="h-4 w-4 text-red-500" />
-                          )}
-                          <span>{gatewayStatus.stripe.configured ? 'Configurado' : 'Não configurado'}</span>
+                      {activePaymentTab === 'mercadopago' && (
+                        <div className={`p-3 rounded-lg border ${gatewayStatus.mercadopago.configured && gatewayStatus.mercadopago.enabled ? 'bg-green-50 border-green-200' : gatewayStatus.mercadopago.configured ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200'}`}>
+                          <div className="flex items-center gap-4 text-sm">
+                            <div className="flex items-center gap-2">
+                              {gatewayStatus.mercadopago.configured ? (
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <XCircle className="h-4 w-4 text-red-500" />
+                              )}
+                              <span>{gatewayStatus.mercadopago.configured ? 'Configurado' : 'Não configurado'}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {gatewayStatus.mercadopago.enabled ? (
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                              ) : (
+                                <XCircle className="h-4 w-4 text-gray-400" />
+                              )}
+                              <span>{gatewayStatus.mercadopago.enabled ? 'Habilitado' : 'Desabilitado'}</span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          {gatewayStatus.stripe.enabled ? (
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <XCircle className="h-4 w-4 text-gray-400" />
-                          )}
-                          <span>{gatewayStatus.stripe.enabled ? 'Habilitado' : 'Desabilitado'}</span>
-                        </div>
-                      </div>
+                      )}
+                      <p className="text-xs text-gray-500 mt-2">
+                        <AlertCircle className="inline h-3 w-3 mr-1" />
+                        Após alterar as chaves, salve e reinicialize para aplicar.
+                      </p>
                     </div>
-                    {/* MercadoPago Status */}
-                    <div className={`p-4 rounded-lg border ${gatewayStatus.mercadopago.configured && gatewayStatus.mercadopago.enabled ? 'bg-green-50 border-green-200' : gatewayStatus.mercadopago.configured ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200'}`}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Banknote className="h-5 w-5" />
-                        <span className="font-medium">Mercado Pago</span>
-                      </div>
-                      <div className="space-y-1 text-sm">
-                        <div className="flex items-center gap-2">
-                          {gatewayStatus.mercadopago.configured ? (
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <XCircle className="h-4 w-4 text-red-500" />
-                          )}
-                          <span>{gatewayStatus.mercadopago.configured ? 'Configurado' : 'Não configurado'}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {gatewayStatus.mercadopago.enabled ? (
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <XCircle className="h-4 w-4 text-gray-400" />
-                          )}
-                          <span>{gatewayStatus.mercadopago.enabled ? 'Habilitado' : 'Desabilitado'}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-3">
-                    <AlertCircle className="inline h-3 w-3 mr-1" />
-                    Após alterar as chaves de API, clique em "Salvar Alterações" e depois em "Reinicializar Gateways" para aplicar as mudanças.
-                  </p>
+                  )}
                 </div>
               )}
 
@@ -493,7 +560,14 @@ export default function AdminSettingsPage() {
 
                 {filteredSettings.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
-                    Nenhuma configuracao nesta categoria
+                    {activeCategory === 'payment' ? (
+                      <>
+                        Nenhuma configuracao disponivel para{' '}
+                        {paymentTabs.find(t => t.key === activePaymentTab)?.label || activePaymentTab}
+                      </>
+                    ) : (
+                      'Nenhuma configuracao nesta categoria'
+                    )}
                   </div>
                 )}
               </div>
