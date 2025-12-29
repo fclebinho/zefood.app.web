@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Clock, MapPin, Phone, Mail, Save, Camera, UtensilsCrossed, Loader2 } from 'lucide-react';
+import { BankAccountForm, BankAccount } from '@/components/restaurant/BankAccountForm';
 import api from '@/services/api';
 import { toast } from 'sonner';
 
@@ -80,6 +81,7 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoadingCep, setIsLoadingCep] = useState(false);
+  const [bankAccount, setBankAccount] = useState<BankAccount | null>(null);
   const [settings, setSettings] = useState<RestaurantSettings>({
     name: '',
     description: '',
@@ -107,6 +109,16 @@ export default function SettingsPage() {
       sunday: { open: '12:00', close: '22:00', isOpen: true },
     },
   });
+
+  const loadBankAccount = useCallback(async () => {
+    try {
+      const response = await api.get<BankAccount | null>('/restaurant-finance/bank-account');
+      setBankAccount(response.data);
+    } catch {
+      // Bank account may not exist yet
+      setBankAccount(null);
+    }
+  }, []);
 
   const loadSettings = useCallback(async () => {
     try {
@@ -159,7 +171,8 @@ export default function SettingsPage() {
 
   useEffect(() => {
     loadSettings();
-  }, [loadSettings]);
+    loadBankAccount();
+  }, [loadSettings, loadBankAccount]);
 
   const fetchAddressFromCep = async (cep: string) => {
     const cleanCep = cep.replace(/\D/g, '');
@@ -578,6 +591,12 @@ export default function SettingsPage() {
           ))}
         </div>
       </div>
+
+      {/* Bank Account */}
+      <BankAccountForm
+        bankAccount={bankAccount}
+        onSave={loadBankAccount}
+      />
 
       {/* Danger Zone */}
       <div className="rounded-xl border border-red-200 bg-red-50 p-6">
