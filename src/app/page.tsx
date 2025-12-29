@@ -1,10 +1,15 @@
-import { appConfig } from '@/config/app';
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import RestaurantLandingPage from '@/components/landing/restaurant-landing';
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Detect mode from host header (works on server-side)
+  const headersList = await headers();
+  const host = headersList.get('host') || '';
+  const isAdmin = host.startsWith('admin.') || host.includes('admin');
+
   // Se for modo admin, redireciona diretamente para login
-  if (appConfig.mode === 'admin') {
+  if (isAdmin) {
     redirect('/auth/login');
   }
 

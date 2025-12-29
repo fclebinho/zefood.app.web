@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/use-auth';
@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Store, Shield } from 'lucide-react';
-import { appConfig } from '@/config/app';
+import { getAppConfig } from '@/config/app';
 
 function LoginForm() {
   const router = useRouter();
@@ -20,7 +20,9 @@ function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const isAdmin = appConfig.mode === 'admin';
+  // Get config dynamically to detect hostname on client-side
+  const config = useMemo(() => getAppConfig(), []);
+  const isAdmin = config.mode === 'admin';
   const Icon = isAdmin ? Shield : Store;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,13 +33,13 @@ function LoginForm() {
       const user = await login(email, password);
 
       // Verificar se o usuário tem permissão para acessar este modo
-      if (!appConfig.allowedRoles.includes(user.role)) {
+      if (!config.allowedRoles.includes(user.role)) {
         toast.error(`Acesso negado. Este portal é exclusivo para ${isAdmin ? 'administradores' : 'restaurantes'}.`);
         return;
       }
 
       toast.success('Login realizado com sucesso!');
-      const redirect = searchParams.get('redirect') || appConfig.loginRedirect;
+      const redirect = searchParams.get('redirect') || config.loginRedirect;
       router.push(redirect);
     } catch (error) {
       toast.error('Email ou senha inválidos');
@@ -52,7 +54,7 @@ function LoginForm() {
         <div className={`mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full ${isAdmin ? 'bg-blue-100' : 'bg-orange-100'}`}>
           <Icon className={`h-6 w-6 ${isAdmin ? 'text-blue-600' : 'text-orange-600'}`} />
         </div>
-        <CardTitle className="text-2xl">{appConfig.title}</CardTitle>
+        <CardTitle className="text-2xl">{config.title}</CardTitle>
         <CardDescription>
           {isAdmin
             ? 'Entre com suas credenciais de administrador'

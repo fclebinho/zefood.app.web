@@ -67,9 +67,10 @@ jobs:
           sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
 
-      - name: Update frontend image tag in prod overlay 🏷️
+      - name: Update frontend/admin image tag in prod overlay 🏷️
         run: |
           cd iac-repo
+          # Both frontend and admin deployments use the same image (fclebinho/zefood.app.web)
           yq -i '(.images[] | select(.name == "fclebinho/zefood.app.web")).newTag = "${{ steps.get_version.outputs.VERSION }}"' iac/k3s/overlays/prod/kustomization.yaml
 
       - name: Commit and push changes 🚀
@@ -78,5 +79,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add iac/k3s/overlays/prod/kustomization.yaml
-          git diff --staged --quiet || git commit -m "chore: update frontend image to v${{ steps.get_version.outputs.VERSION }}"
+          git diff --staged --quiet || git commit -m "chore: update frontend and admin image to v${{ steps.get_version.outputs.VERSION }}"
           git push
