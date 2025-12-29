@@ -15,6 +15,7 @@ import {
   ChevronRight,
   LogOut,
 } from 'lucide-react';
+import packageJson from '../../../package.json';
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -109,6 +110,11 @@ export default function AdminLayout({
             <LogOut className="h-4 w-4" />
             {sidebarOpen && 'Sair'}
           </button>
+          {sidebarOpen && (
+            <p className="mt-3 text-center text-xs text-gray-500">
+              v{packageJson.version}
+            </p>
+          )}
         </div>
       </aside>
 

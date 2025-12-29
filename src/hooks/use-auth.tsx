@@ -10,8 +10,8 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (data: { email: string; password: string; name: string; phone?: string }) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
+  register: (data: { email: string; password: string; name: string; phone?: string }) => Promise<User>;
   logout: () => void;
 }
 
@@ -62,22 +62,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [router]);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<User> => {
     const response = await legacyApi.login(email, password) as AuthResponse;
     setUser(response.user);
     setToken(response.accessToken);
     localStorage.setItem('token', response.accessToken);
     localStorage.setItem('refreshToken', response.refreshToken);
     localStorage.setItem('user', JSON.stringify(response.user));
+    return response.user;
   };
 
-  const register = async (data: { email: string; password: string; name: string; phone?: string }) => {
+  const register = async (data: { email: string; password: string; name: string; phone?: string }): Promise<User> => {
     const response = await legacyApi.register(data) as AuthResponse;
     setUser(response.user);
     setToken(response.accessToken);
     localStorage.setItem('token', response.accessToken);
     localStorage.setItem('refreshToken', response.refreshToken);
     localStorage.setItem('user', JSON.stringify(response.user));
+    return response.user;
   };
 
   const logout = () => {

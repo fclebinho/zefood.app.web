@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Store } from 'lucide-react';
+import { Store, Shield } from 'lucide-react';
+import { appConfig } from '@/config/app';
 
 function LoginForm() {
   const router = useRouter();
@@ -19,14 +20,24 @@ function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  const isAdmin = appConfig.mode === 'admin';
+  const Icon = isAdmin ? Shield : Store;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      await login(email, password);
+      const user = await login(email, password);
+
+      // Verificar se o usuário tem permissão para acessar este modo
+      if (!appConfig.allowedRoles.includes(user.role)) {
+        toast.error(`Acesso negado. Este portal é exclusivo para ${isAdmin ? 'administradores' : 'restaurantes'}.`);
+        return;
+      }
+
       toast.success('Login realizado com sucesso!');
-      const redirect = searchParams.get('redirect') || '/restaurant';
+      const redirect = searchParams.get('redirect') || appConfig.loginRedirect;
       router.push(redirect);
     } catch (error) {
       toast.error('Email ou senha inválidos');
@@ -38,12 +49,15 @@ function LoginForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-orange-100">
-          <Store className="h-6 w-6 text-orange-600" />
+        <div className={`mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full ${isAdmin ? 'bg-blue-100' : 'bg-orange-100'}`}>
+          <Icon className={`h-6 w-6 ${isAdmin ? 'text-blue-600' : 'text-orange-600'}`} />
         </div>
-        <CardTitle className="text-2xl">Portal do Restaurante</CardTitle>
+        <CardTitle className="text-2xl">{appConfig.title}</CardTitle>
         <CardDescription>
-          Entre com sua conta para gerenciar seu restaurante
+          {isAdmin
+            ? 'Entre com suas credenciais de administrador'
+            : 'Entre com sua conta para gerenciar seu restaurante'
+          }
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
@@ -72,15 +86,21 @@ function LoginForm() {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-          <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600" disabled={isLoading}>
+          <Button
+            type="submit"
+            className={`w-full ${isAdmin ? 'bg-blue-500 hover:bg-blue-600' : 'bg-orange-500 hover:bg-orange-600'}`}
+            disabled={isLoading}
+          >
             {isLoading ? 'Entrando...' : 'Entrar'}
           </Button>
-          <p className="text-sm text-muted-foreground text-center">
-            Ainda não tem seu restaurante cadastrado?{' '}
-            <Link href="/auth/register" className="text-orange-500 hover:underline">
-              Cadastre-se
-            </Link>
-          </p>
+          {!isAdmin && (
+            <p className="text-sm text-muted-foreground text-center">
+              Ainda não tem seu restaurante cadastrado?{' '}
+              <Link href="/auth/register" className="text-orange-500 hover:underline">
+                Cadastre-se
+              </Link>
+            </p>
+          )}
         </CardFooter>
       </form>
     </Card>
