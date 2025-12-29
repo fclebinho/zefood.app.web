@@ -3,13 +3,14 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, ClipboardList, UtensilsCrossed, BarChart3, Settings, Bell, Power, LogOut } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, UtensilsCrossed, BarChart3, Settings, Bell, Power, LogOut, Wallet } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 
 const sidebarItems = [
   { href: '/restaurant', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/restaurant/orders', icon: ClipboardList, label: 'Pedidos' },
   { href: '/restaurant/menu', icon: UtensilsCrossed, label: 'Cardápio' },
+  { href: '/restaurant/finance', icon: Wallet, label: 'Finanças' },
   { href: '/restaurant/reports', icon: BarChart3, label: 'Relatórios' },
   { href: '/restaurant/settings', icon: Settings, label: 'Configurações' },
 ];
