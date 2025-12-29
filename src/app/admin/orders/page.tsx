@@ -24,6 +24,7 @@ interface DeliveryAddress {
 
 interface Order {
   id: string;
+  orderNumber: number;
   status: string;
   total: number;
   deliveryAddress: DeliveryAddress | string;

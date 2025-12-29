@@ -19,6 +19,7 @@ interface OrderStats {
 
 interface Order {
   id: string;
+  orderNumber: number;
   status: string;
   total: number;
   items: Array<{ quantity: number; menuItem: { name: string } }>;
