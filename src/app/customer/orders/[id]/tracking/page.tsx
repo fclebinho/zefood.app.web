@@ -39,6 +39,7 @@ interface DriverLocation {
 
 interface TrackingData {
   orderId: string;
+  orderNumber: number;
   status: string;
   driver: {
     id: string;
