@@ -63,7 +63,7 @@ export default function OrdersPage() {
 
     // Show toast notification
     toast.success('Novo pedido recebido!', {
-      description: `Pedido #${order.id.slice(-6).toUpperCase()} - ${order.customer?.fullName || 'Cliente'}`,
+      description: `Pedido #${order.orderNumber} - ${order.customer?.fullName || 'Cliente'}`,
       duration: 10000,
       action: {
         label: 'Ver pedido',
@@ -229,7 +229,7 @@ export default function OrdersPage() {
           <div className="flex items-start justify-between">
             <div>
               <h3 className="font-semibold text-gray-900">
-                Pedido #{order.id.slice(-6).toUpperCase()}
+                Pedido #{order.orderNumber}
               </h3>
               <p className="text-sm text-gray-500">{formatTime(order.createdAt)}</p>
             </div>

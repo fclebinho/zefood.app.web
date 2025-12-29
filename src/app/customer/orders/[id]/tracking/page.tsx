@@ -376,7 +376,7 @@ export default function OrderTrackingPage() {
         {/* Order Number */}
         <div className="bg-white rounded-lg shadow p-4 flex justify-between items-center">
           <span className="text-gray-600">Pedido</span>
-          <span className="font-bold text-orange-500">#{orderId.slice(-6).toUpperCase()}</span>
+          <span className="font-bold text-orange-500">#{trackingData.orderNumber}</span>
         </div>
       </div>
     </div>

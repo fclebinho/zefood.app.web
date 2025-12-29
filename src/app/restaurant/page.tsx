@@ -225,7 +225,7 @@ export default function RestaurantDashboard() {
                 <div className="flex items-center gap-4">
                   <div>
                     <p className="font-medium text-gray-900">
-                      Pedido #{order.id.slice(-6).toUpperCase()}
+                      Pedido #{order.orderNumber}
                     </p>
                     <p className="text-sm text-gray-500">
                       {order.customer?.fullName || 'Cliente'}

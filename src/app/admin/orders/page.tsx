@@ -213,8 +213,8 @@ export default function AdminOrders() {
               {orders.map((order) => (
                 <tr key={order.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-mono text-gray-900">
-                      #{order.id.slice(0, 8)}
+                    <div className="text-sm font-medium text-gray-900">
+                      #{order.orderNumber}
                     </div>
                     <div className="text-xs text-gray-500">
                       {order.items.length} item(s)
@@ -291,7 +291,7 @@ export default function AdminOrders() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold text-gray-900 mb-4">
-              Detalhes do Pedido #{selectedOrder.id.slice(0, 8)}
+              Detalhes do Pedido #{selectedOrder.orderNumber}
             </h2>
 
             <div className="grid grid-cols-2 gap-4 mb-4">
