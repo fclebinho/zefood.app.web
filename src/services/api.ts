@@ -1,4 +1,15 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+// Get API URL dynamically based on current origin
+// This allows the same build to work on different hosts (zefood.app, admin.zefood.app)
+function getApiUrl(): string {
+  if (typeof window === 'undefined') {
+    // Server-side: use env variable
+    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+  }
+  // Client-side: use current origin + /api
+  return `${window.location.origin}/api`;
+}
+
+const API_URL = getApiUrl();
 
 // Simple event emitter for session expiry
 type AuthEventListener = () => void;

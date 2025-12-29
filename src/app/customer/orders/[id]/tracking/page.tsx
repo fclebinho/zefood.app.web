@@ -5,6 +5,14 @@ import { useParams } from 'next/navigation';
 import { io, Socket } from 'socket.io-client';
 import { AlertTriangle, User, Phone, Check } from 'lucide-react';
 
+// Get WebSocket URL dynamically based on current origin
+function getWsUrl(): string {
+  if (typeof window === 'undefined') {
+    return (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace('/api', '');
+  }
+  return window.location.origin;
+}
+
 declare global {
   interface Window {
     google: typeof google;
@@ -97,9 +105,9 @@ export default function OrderTrackingPage() {
     if (!orderId) return;
 
     const token = localStorage.getItem('token');
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+    const wsUrl = getWsUrl();
 
-    socketRef.current = io(`${apiUrl}/tracking`, {
+    socketRef.current = io(`${wsUrl}/tracking`, {
       transports: ['websocket'],
       auth: { token },
     });

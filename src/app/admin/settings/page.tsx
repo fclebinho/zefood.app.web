@@ -3,6 +3,14 @@
 import { useState, useEffect } from 'react';
 import { Truck, Banknote, CreditCard, Package, Settings, FileText, Save, RefreshCw, CheckCircle, XCircle, AlertCircle, Eye, EyeOff, Wallet, QrCode, DollarSign, Trash2, Archive } from 'lucide-react';
 
+// Get API URL dynamically based on current origin
+function getApiUrl(): string {
+  if (typeof window === 'undefined') {
+    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+  }
+  return `${window.location.origin}/api`;
+}
+
 interface GatewayStatus {
   stripe: {
     configured: boolean;
@@ -87,7 +95,7 @@ export default function AdminSettingsPage() {
   const loadSettings = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings`, {
+      const response = await fetch(`${getApiUrl()}/settings`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -108,7 +116,7 @@ export default function AdminSettingsPage() {
   const loadCategories = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/categories`, {
+      const response = await fetch(`${getApiUrl()}/settings/categories`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -126,7 +134,7 @@ export default function AdminSettingsPage() {
   const loadGatewayStatus = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/admin/gateway-status`, {
+      const response = await fetch(`${getApiUrl()}/payments/admin/gateway-status`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -144,7 +152,7 @@ export default function AdminSettingsPage() {
   const loadOrphanedSettings = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/orphaned`, {
+      const response = await fetch(`${getApiUrl()}/settings/orphaned`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -163,7 +171,7 @@ export default function AdminSettingsPage() {
     setDeletingKey(key);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings/${key}`, {
+      const response = await fetch(`${getApiUrl()}/settings/${key}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -187,7 +195,7 @@ export default function AdminSettingsPage() {
     setIsReinitializing(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/payments/admin/reinitialize-gateways`, {
+      const response = await fetch(`${getApiUrl()}/payments/admin/reinitialize-gateways`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -233,7 +241,7 @@ export default function AdminSettingsPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/settings`, {
+      const response = await fetch(`${getApiUrl()}/settings`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

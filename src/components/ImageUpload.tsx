@@ -3,7 +3,13 @@
 import { useState, useRef } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+// Get API URL dynamically based on current origin
+function getApiUrl(): string {
+  if (typeof window === 'undefined') {
+    return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+  }
+  return `${window.location.origin}/api`;
+}
 
 interface ImageUploadProps {
   currentImage?: string;
@@ -60,7 +66,7 @@ export function ImageUpload({
       formData.append('file', file);
 
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/upload/${uploadEndpoint}`, {
+      const response = await fetch(`${getApiUrl()}/upload/${uploadEndpoint}`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

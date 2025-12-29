@@ -3,8 +3,13 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 
-// Base URL for WebSocket connection (without /api)
-const WS_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace('/api', '');
+// Get WebSocket URL dynamically based on current origin
+function getWsUrl(): string {
+  if (typeof window === 'undefined') {
+    return (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace('/api', '');
+  }
+  return window.location.origin;
+}
 
 interface OrderStatusUpdate {
   orderId: string;
@@ -46,10 +51,11 @@ export function useOrdersSocket({
 
   // Create socket connection once
   useEffect(() => {
-    console.log('[WebSocket] Creating connection to:', `${WS_URL}/orders`);
+    const wsUrl = getWsUrl();
+    console.log('[WebSocket] Creating connection to:', `${wsUrl}/orders`);
 
     // Connect to /orders namespace which is where the backend gateway listens
-    const socket = io(`${WS_URL}/orders`, {
+    const socket = io(`${wsUrl}/orders`, {
       path: '/socket.io',
       transports: ['websocket', 'polling'],
     });
