@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, ClipboardList, UtensilsCrossed, BarChart3, Settings, Bell, Power, LogOut, Wallet } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import packageJson from '../../../package.json';
 
 const sidebarItems = [
   { href: '/restaurant', icon: LayoutDashboard, label: 'Dashboard' },
@@ -105,6 +106,9 @@ export default function RestaurantLayout({
             <LogOut className="h-4 w-4" />
             Sair
           </button>
+          <p className="mt-3 text-center text-xs text-gray-400">
+            v{packageJson.version}
+          </p>
         </div>
       </aside>
 
