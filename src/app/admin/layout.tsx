@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
+  Wallet,
 } from 'lucide-react';
 import packageJson from '../../../package.json';
 
@@ -22,6 +23,7 @@ const navItems = [
   { href: '/admin/restaurants', label: 'Restaurantes', icon: UtensilsCrossed },
   { href: '/admin/orders', label: 'Pedidos', icon: Package },
   { href: '/admin/drivers', label: 'Entregadores', icon: Car },
+  { href: '/admin/finance', label: 'Finanças', icon: Wallet },
   { href: '/admin/users', label: 'Usuários', icon: Users },
   { href: '/admin/settings', label: 'Configurações', icon: Settings },
 ];
